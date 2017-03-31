@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:id="@+id/list_item"
+    android:layout_height="wrap_content">
 
 
 
@@ -9,7 +10,49 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+<LinearLayout
+    android:weightSum="1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+    <LinearLayout
+        android:layout_weight="0.80"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tv_Name"
+            android:text="@string/name"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ratting"
+            android:id="@+id/tv_ratting"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/distance_and_durarion"
+            android:id="@+id/tv_distance"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/address"
+            android:id="@+id/tv_address"/>
+
+
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/call"
+        android:layout_weight=".20"
+        android:layout_width="150dp"
+        android:layout_height="170dp"
+        android:contentDescription="@string/call_button_or_place_image" />
+
+</LinearLayout>
 
 
     </android.support.v7.widget.CardView>

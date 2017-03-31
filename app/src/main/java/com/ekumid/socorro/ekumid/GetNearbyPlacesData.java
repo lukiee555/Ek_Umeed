@@ -1,4 +1,4 @@
-package com.ekumid.socorro.ekumid.NearbyPlaces;
+package com.ekumid.socorro.ekumid;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -18,6 +18,8 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
     String googlePlacesData;
     GoogleMap mMap;
     String url;
+    String distance = "";
+    String duration = "";
 
     @Override
     protected String doInBackground(Object... params) {
@@ -63,4 +65,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
             mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
         }
     }
+
+
+
 }

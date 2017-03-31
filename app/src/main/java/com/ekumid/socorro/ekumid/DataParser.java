@@ -1,4 +1,4 @@
-package com.ekumid.socorro.ekumid.NearbyPlaces;
+package com.ekumid.socorro.ekumid;
 
 import android.util.Log;
 

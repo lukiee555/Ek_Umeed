@@ -1,6 +1,5 @@
 package com.ekumid.socorro.ekumid;
 
-import android.*;
 import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,31 +8,30 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.ekumid.socorro.ekumid.ConditionForEnableLocation.AppUtils;
-import com.ekumid.socorro.ekumid.NearbyPlaces.GetNearbyPlacesData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,26 +50,28 @@ import java.io.IOException;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,OnMapReadyCallback,
+        implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
 
     Context mContext;
     private GoogleMap mMap;
-    double latitude;
-    double longitude;
-    private int PROXIMITY_RADIUS = 50000;
+    static double latitude;
+    static double longitude;
+    private long PROXIMITY_RADIUS = 50000;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
     LocationRequest mLocationRequest;
+    static int a = 0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        mContext=this;
+        mContext = this;
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -99,21 +99,21 @@ public class MapsActivity extends AppCompatActivity
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             checkLocationPermission();
         }
-        if (checkPlayServices ()) {
+        if (checkPlayServices()) {
             // If this check succeeds, proceed with normal processing.
             // Otherwise, prompt user to get valid Play Services APK.
-            if (!AppUtils.isLocationEnabled (mContext)) {
+            if (!AppUtils.isLocationEnabled(mContext)) {
                 // notify user
-                AlertDialog.Builder dialog = new AlertDialog.Builder (mContext);
-                dialog.setMessage ("Location not enabled!");
-                dialog.setPositiveButton ("Open location settings", new DialogInterface.OnClickListener () {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
+                dialog.setMessage("Location not enabled!");
+                dialog.setPositiveButton("Open location settings", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface paramDialogInterface, int paramInt) {
                         Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity (myIntent);
+                        startActivity(myIntent);
                     }
                 });
-                dialog.setNegativeButton ("Cancel", new DialogInterface.OnClickListener () {
+                dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
                     @Override
                     public void onClick(DialogInterface paramDialogInterface, int paramInt) {
@@ -121,33 +121,36 @@ public class MapsActivity extends AppCompatActivity
 
                     }
                 });
-                dialog.show ();
+                dialog.show();
             }
-            buildGoogleApiClient ();
+            buildGoogleApiClient();
         } else {
-            Toast.makeText (mContext, "Location not supported in this device", Toast.LENGTH_SHORT).show ();
+            Toast.makeText(mContext, "Location not supported in this device", Toast.LENGTH_SHORT).show();
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mMap.setMyLocationEnabled(true);
     }
 
     protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder (this)
-                .addConnectionCallbacks (this)
-                .addOnConnectionFailedListener (this)
-                .addApi (LocationServices.API)
-                .build ();
-        mGoogleApiClient.connect();
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+//        mGoogleApiClient.connect();
     }
+
     private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable (this);
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError (resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog (resultCode, this,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show ();
+            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
                 //finish();
             }
@@ -196,6 +199,7 @@ public class MapsActivity extends AppCompatActivity
 
         if (id == R.id.nav_hospital) {
             // Handle the camera action
+            a = 1;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
@@ -206,7 +210,7 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this,"Nearby Hospitals", Toast.LENGTH_LONG).show();
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_ambulance) {
 
@@ -215,7 +219,7 @@ public class MapsActivity extends AppCompatActivity
         } else if (id == R.id.nav_rail) {
 
         } else if (id == R.id.nav_bus) {
-            String Bus  = "bus_station";
+            String Bus = "bus_station";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
             String url = getUrl(latitude, longitude, Bus);
@@ -227,7 +231,7 @@ public class MapsActivity extends AppCompatActivity
             getNearbyPlacesData.execute(DataTransfer);
 
         } else if (id == R.id.nav_petrol) {
-            String Petrol  = "gas_station";
+            String Petrol = "gas_station";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
             String url = getUrl(latitude, longitude, Petrol);
@@ -238,15 +242,15 @@ public class MapsActivity extends AppCompatActivity
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
 
-        }else if (id == R.id.nav_police) {
+        } else if (id == R.id.nav_police) {
 
-        }else if (id == R.id.nav_mobile) {
+        } else if (id == R.id.nav_mobile) {
 
-        }else if (id == R.id.nav_toilet) {
+        } else if (id == R.id.nav_toilet) {
 
-        }else if (id == R.id.nav_department) {
+        } else if (id == R.id.nav_department) {
 
-        }else if (id == R.id.nav_retro) {
+        } else if (id == R.id.nav_retro) {
             String Restaurant = "restaurant";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
@@ -257,7 +261,7 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this,"Nearby Restaurants", Toast.LENGTH_LONG).show();
+            Toast.makeText(MapsActivity.this, "Nearby Restaurants", Toast.LENGTH_LONG).show();
 
         }
 
@@ -271,11 +275,8 @@ public class MapsActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
-        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-        mMap.setMyLocationEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
 
-        //Initialize Google Play Services
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -283,11 +284,22 @@ public class MapsActivity extends AppCompatActivity
                 buildGoogleApiClient();
                 mMap.setMyLocationEnabled(true);
             }
-        }
-        else {
+        } else {
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+
 
     }
 
@@ -303,6 +315,18 @@ public class MapsActivity extends AppCompatActivity
                 == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
     }
 
@@ -320,6 +344,8 @@ public class MapsActivity extends AppCompatActivity
     public void onLocationChanged(Location location) {
 
         Log.d("onLocationChanged", "entered");
+
+
 
         mLastLocation = location;
         if (mCurrLocationMarker != null) {
@@ -369,7 +395,7 @@ public class MapsActivity extends AppCompatActivity
         googlePlacesUrl.append("&radius=" + PROXIMITY_RADIUS);
         googlePlacesUrl.append("&type=" + nearbyPlace);
         googlePlacesUrl.append("&sensor=true");
-        googlePlacesUrl.append("&key=" + "AIzaSyD7nKn8x6rPGTaHGZLO7GythsdriUWzSq8");
+        googlePlacesUrl.append("&key=" + "AIzaSyBv8IjKHGDAaleGsUBdmQ9ZMZxqtSOMooo");
         Log.d("getUrl", googlePlacesUrl.toString());
         return (googlePlacesUrl.toString());
     }

@@ -37,6 +37,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         holder.Placename.setText(listItem.getPlaceName());
         holder.Address.setText(listItem.getAddress());
         holder.Ratting.setText(listItem.getPlaceName());
+        holder.Distance.setText(listItem.getDistance());
     }
 
     @Override

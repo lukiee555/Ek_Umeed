@@ -185,6 +185,12 @@ public class MapsActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            if(a==1){
+                Intent i =new Intent(MapsActivity.this,RecyclerViewActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+            }
+
             return true;
         }
 
@@ -327,6 +333,8 @@ public class MapsActivity extends AppCompatActivity
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+        mMap.setMyLocationEnabled(true);
 
     }
 

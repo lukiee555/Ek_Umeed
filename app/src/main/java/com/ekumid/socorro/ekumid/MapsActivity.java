@@ -133,7 +133,7 @@ public class MapsActivity extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        mMap.setMyLocationEnabled(true);
+
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -300,7 +300,7 @@ public class MapsActivity extends AppCompatActivity
         }
         mMap.setMyLocationEnabled(true);
 
-
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -344,8 +344,6 @@ public class MapsActivity extends AppCompatActivity
     public void onLocationChanged(Location location) {
 
         Log.d("onLocationChanged", "entered");
-
-
 
         mLastLocation = location;
         if (mCurrLocationMarker != null) {

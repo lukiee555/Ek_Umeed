@@ -199,19 +199,18 @@ public class MapsActivity extends AppCompatActivity
                             int a=Integer.parseInt(distt.get(i));
                             nearestambulance ambulance=new nearestambulance(dest,a);
                             list.add(ambulance);
+                        }
 
-                        Collections.sort(list, new Comparator<nearestambulance>(){
-                            public int compare(nearestambulance obj1, nearestambulance obj2)
-                            {
-                                // TODO Auto-generated method stub
-                                return (obj1.distance < obj2.distance) ? -1: (obj1.distance > obj2.distance) ? 1:0 ;
-                            }
-                        });
-                        nearestambulance listItem = list.get(0);
-//                        int b=listItem.getDistance();
-//                        Toast.makeText(mContext,"kvnsd"+b+"jsdnvjsd",Toast.LENGTH_LONG).show();
-
-                    }
+                    Collections.sort(list, new Comparator<nearestambulance>(){
+                        public int compare(nearestambulance obj1, nearestambulance obj2)
+                        {
+                            // TODO Auto-generated method stub
+                            return (obj1.distance < obj2.distance) ? -1: (obj1.distance > obj2.distance) ? 1:0 ;
+                        }
+                    });
+                    nearestambulance listItem = list.get(0);
+                    int b=listItem.getDistance();
+//                    Toast.makeText(mContext,"kvnsd"+b+"jsdnvjsd",Toast.LENGTH_SHORT).show();
                 }
             }
         });

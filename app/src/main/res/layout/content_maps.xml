@@ -1,7 +1,10 @@
-<FrameLayout
-    android:layout_width="match_parent"
+
+
+
+<FrameLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <fragment android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -10,6 +13,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.androidtutorialpoint.googlemapsnearbyplaces.MapsActivity"/>
+    <Button
+        android:id="@+id/bt_em"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="@string/emergency"
+        android:elevation="5dp"
+        android:layout_gravity="top"
+        android:layout_marginTop="70dp"
+        android:textColor="#ffffff"
+        android:background="@drawable/button"
+        />
 
 
 

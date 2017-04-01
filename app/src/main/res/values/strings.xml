@@ -12,4 +12,6 @@
     <string name="call_button_or_place_image">Call button or place image</string>
     <string name="list_item">List Item</string>
     <string name="number">Number</string>
+    <string name="emergancy">Emergancy</string>
+    <string name="emergency">emergency</string>
 </resources>

@@ -31,6 +31,7 @@
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
         <TextView
             android:layout_width="match_parent"
+            android:visibility="gone"
             android:layout_height="wrap_content"
             android:text="@string/distance_and_durarion"
             android:textSize="20sp"
@@ -43,14 +44,10 @@
             android:textSize="20sp"
             android:id="@+id/tv_address"/>
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="2dp"
-            android:background="#efefef"/>
 
         <TextView
             android:layout_marginLeft="15dp"
-            android:id="@+id/Driver_num"
+            android:id="@+id/tv_num"
             android:drawablePadding="25dp"
             android:singleLine="true"
             android:drawableLeft="@drawable/ic_local_phone_black_24dp"

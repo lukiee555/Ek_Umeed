@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#ed3c4a</color>
+    <color name="colorPrimaryDark">#ed3c4a</color>
+    <color name="colorAccent">#ed3c4a</color>
+    <array name="progress_colors">
+
+        <item>#3498db</item>
+        <item>#d35400</item>
+        <item>#27ae60</item>
+    </array>
 </resources>

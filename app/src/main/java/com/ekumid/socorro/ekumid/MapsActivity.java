@@ -1,6 +1,7 @@
 package com.ekumid.socorro.ekumid;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -17,7 +19,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -29,6 +30,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ProgressBar;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
 import com.ekumid.socorro.ekumid.ConditionForEnableLocation.AppUtils;
@@ -46,7 +51,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity
@@ -55,15 +66,26 @@ public class MapsActivity extends AppCompatActivity
         GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
 
+    Button emergency;
+    private String TAG = MapsActivity.class.getSimpleName();
     Context mContext;
     private GoogleMap mMap;
     static double latitude;
     static double longitude;
-    private long PROXIMITY_RADIUS = 50000;
+    int count =0;
+    private ProgressBar progressBar;
+    ProgressDialog pDialog;
+    JSONArray contacts;
+    private long PROXIMITY_RADIUS = 500000;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
+    ArrayList<HashMap<String, String>> contactList;
+    ArrayList<Double> laat = new ArrayList<Double>();
+    ArrayList<Double> loot = new ArrayList<Double>();
+    Double lt, lo;
     LocationRequest mLocationRequest;
+    private static String url = "http://ekumeed.esy.es/get.php";
     static int a = 0;
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
@@ -72,6 +94,8 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         mContext = this;
+        emergency = (Button) findViewById(R.id.bt_em);
+        contactList = new ArrayList<>();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -79,8 +103,8 @@ public class MapsActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                goToLocationZoom(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+
             }
         });
 
@@ -132,6 +156,53 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        emergency.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                showProgress();
+
+                if(count==0){
+                LatLng latLng=new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                new GetContacts().execute();
+                mMap.clear();
+                //Place current location marker
+                MarkerOptions markerOptions = new MarkerOptions();
+                markerOptions.position(latLng);
+                markerOptions.title("Current Position");
+                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                mCurrLocationMarker = mMap.addMarker(markerOptions);
+                for(int i=0;i<contacts.length();i++) {
+                    LatLng dest = new LatLng(laat.get(i), loot.get(i));
+                    MarkerOptions markerOption = new MarkerOptions();
+                    markerOption.position(dest);
+                    markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                    mMap.addMarker(markerOption);
+                }
+                    count++;
+
+                }else{
+                    mMap.clear();
+                    LatLng latLng=new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                    new GetContacts().execute();
+                    //Place current location marker
+                    MarkerOptions markerOptions = new MarkerOptions();
+                    markerOptions.position(latLng);
+                    markerOptions.title("Current Position");
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                    mCurrLocationMarker = mMap.addMarker(markerOptions);
+                    for(int i=0;i<contacts.length();i++) {
+                        LatLng dest = new LatLng(laat.get(i), loot.get(i));
+                        MarkerOptions markerOption = new MarkerOptions();
+                        markerOption.position(dest);
+                        markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                        mMap.addMarker(markerOption);
+                    }
+
+                }
+//                hideProgressBar();
+            }
+        });
 
 
     }
@@ -185,12 +256,9 @@ public class MapsActivity extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            if(a==1){
-                Intent i =new Intent(MapsActivity.this,RecyclerViewActivity.class);
-                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(i);
-            }
-
+            Intent i =new Intent(MapsActivity.this,RecyclerViewActivity.class);
+            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
             return true;
         }
 
@@ -205,6 +273,7 @@ public class MapsActivity extends AppCompatActivity
 
         if (id == R.id.nav_hospital) {
             // Handle the camera action
+            GetNearbyPlacesData.listItems.clear();
             a = 1;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
@@ -216,9 +285,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_ambulance) {
+            GetNearbyPlacesData.listItems.clear();
             a=2;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
@@ -230,9 +300,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_toll) {
+            GetNearbyPlacesData.listItems.clear();
             a=3;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
@@ -244,9 +315,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_rail) {
+            GetNearbyPlacesData.listItems.clear();
             a=4;
             String Hospital = "train_station";
             Log.d("onClick", "Button is Clicked");
@@ -258,9 +330,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_bus) {
+            GetNearbyPlacesData.listItems.clear();
             a=5;
             String Bus = "bus_station";
             Log.d("onClick", "Button is Clicked");
@@ -274,6 +347,7 @@ public class MapsActivity extends AppCompatActivity
             getNearbyPlacesData.execute(DataTransfer);
 
         } else if (id == R.id.nav_petrol) {
+            GetNearbyPlacesData.listItems.clear();
             a=6;
             String Petrol = "gas_station";
             Log.d("onClick", "Button is Clicked");
@@ -287,6 +361,7 @@ public class MapsActivity extends AppCompatActivity
             getNearbyPlacesData.execute(DataTransfer);
 
         } else if (id == R.id.nav_police) {
+            GetNearbyPlacesData.listItems.clear();
             a=7;
             String Hospital = "police";
             Log.d("onClick", "Button is Clicked");
@@ -298,9 +373,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_mobile) {
+            GetNearbyPlacesData.listItems.clear();
             a=8;
             String Hospital = "car_repair";
             Log.d("onClick", "Button is Clicked");
@@ -312,9 +388,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_toilet) {
+            GetNearbyPlacesData.listItems.clear();
             a=9;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
@@ -326,9 +403,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_department) {
+            GetNearbyPlacesData.listItems.clear();
             a=10;
             String Hospital = "hospital";
             Log.d("onClick", "Button is Clicked");
@@ -340,9 +418,10 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_retro) {
+            GetNearbyPlacesData.listItems.clear();
             a=11;
             String Restaurant = "restaurant";
             Log.d("onClick", "Button is Clicked");
@@ -354,7 +433,7 @@ public class MapsActivity extends AppCompatActivity
             Log.d("onClick", url);
             GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
             getNearbyPlacesData.execute(DataTransfer);
-            Toast.makeText(MapsActivity.this, "Nearby Restaurants", Toast.LENGTH_LONG).show();
+//            Toast.makeText(MapsActivity.this, "Nearby Restaurants", Toast.LENGTH_LONG).show();
 
         }
 
@@ -368,8 +447,8 @@ public class MapsActivity extends AppCompatActivity
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
+        mMap.getUiSettings().setAllGesturesEnabled(true);
         mMap.getUiSettings().setMapToolbarEnabled(true);
-
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this,
                     android.Manifest.permission.ACCESS_FINE_LOCATION)
@@ -391,13 +470,15 @@ public class MapsActivity extends AppCompatActivity
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+        mGoogleApiClient.connect();
         mMap.setMyLocationEnabled(true);
 
-        mGoogleApiClient.connect();
+
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
@@ -421,7 +502,6 @@ public class MapsActivity extends AppCompatActivity
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
-        mMap.setMyLocationEnabled(true);
 
     }
 
@@ -456,7 +536,7 @@ public class MapsActivity extends AppCompatActivity
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        new GetContacts().execute();
 //        String locality = list.get (0).getAddressLine (0);
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
@@ -560,6 +640,98 @@ public class MapsActivity extends AppCompatActivity
             // You can add here other case statements according to your requirement.
         }
     }
+
+    private class GetContacts extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0) {
+            HttpHandler sh = new HttpHandler();
+
+            // Making a request to url and getting response
+            String jsonStr = sh.makeServiceCall(url);
+
+            Log.e(TAG, "Response from url: " + jsonStr);
+
+            if (jsonStr != null) {
+                try {
+                    JSONObject jsonObj = new JSONObject(jsonStr);
+
+                    // Getting JSON Array node
+                    contacts = jsonObj.getJSONArray("result");
+
+                    // looping through All Contacts
+                    for (int i = 0; i < contacts.length(); i++) {
+                        JSONObject c = contacts.getJSONObject(i);
+                        String lat=c.getString("lat");
+                        String lon=c.getString("lon");
+                        lt=Double.parseDouble(lat);
+                        lo=Double.parseDouble(lon);
+                        HashMap<String, String> contact = new HashMap<>();
+                        laat.add(lt);
+                        loot.add(lo);
+                        contact.put("lat", lat);
+                        contact.put("lon", lon);
+                        contactList.add(contact);
+
+
+
+                    }
+                } catch (final JSONException e) {
+                    Log.e(TAG, "Json parsing error: " + e.getMessage());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),
+                                    "Json parsing error: " + e.getMessage(),
+                                    Toast.LENGTH_LONG)
+                                    .show();
+                        }
+                    });
+
+                }
+            } else {
+                Log.e(TAG, "Couldn't get json from server.");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+//             Dismiss the progress dialog
+//             pDialog.dismiss();
+            /**
+             * Updating parsed JSON data into ListView
+             * */
+
+
+        }
+
+    }
+    private void goToLocationZoom(double lat, double lng) {
+        LatLng latLng = new LatLng(lat, lng);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
+    }
+
 
 
 }

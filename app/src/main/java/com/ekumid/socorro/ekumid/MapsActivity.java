@@ -50,13 +50,21 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,16 +81,18 @@ public class MapsActivity extends AppCompatActivity
     static double latitude;
     static double longitude;
     int count =0;
-    private ProgressBar progressBar;
-    ProgressDialog pDialog;
     JSONArray contacts;
-    private long PROXIMITY_RADIUS = 500000;
+    String distance = "";
+    String duration = "";
+    List<nearestambulance> list=new ArrayList<>();
+    private long PROXIMITY_RADIUS = 50000;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
     Marker mCurrLocationMarker;
     ArrayList<HashMap<String, String>> contactList;
     ArrayList<Double> laat = new ArrayList<Double>();
     ArrayList<Double> loot = new ArrayList<Double>();
+
     Double lt, lo;
     LocationRequest mLocationRequest;
     private static String url = "http://ekumeed.esy.es/get.php";
@@ -103,8 +113,11 @@ public class MapsActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                goToLocationZoom(mLastLocation.getLatitude(),mLastLocation.getLongitude());
-
+                if(mLastLocation==null){
+                    Toast.makeText(mContext,"Please check internet or wait",Toast.LENGTH_SHORT).show();
+                }else {
+                    goToLocationZoom(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                }
             }
         });
 
@@ -160,47 +173,66 @@ public class MapsActivity extends AppCompatActivity
         emergency.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                showProgress();
+                if(mLastLocation==null){
+                    Toast.makeText(mContext,"Please check internet or wait",Toast.LENGTH_SHORT).show();
+                }else {
+                    if (count == 0) {
+                        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                        new GetContacts().execute();
+                        mMap.clear();
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title("Current Position");
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                        mCurrLocationMarker = mMap.addMarker(markerOptions);
+                        for (int i = 0; i < contacts.length(); i++) {
+                            LatLng dest = new LatLng(laat.get(i), loot.get(i));
+                            MarkerOptions markerOption = new MarkerOptions();
+                            markerOption.position(dest);
+                            markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                            mMap.addMarker(markerOption);
+                            LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
+                            String url1 = getDirectionsUrl(origin, latLng);
+                            DownloadTask downloadTask = new DownloadTask();
+                            downloadTask.execute(url1);
+                            int a=Integer.parseInt(distance);
+                            nearestambulance ambulance=new nearestambulance(dest,a);
+                            list.add(ambulance);
+                        }
+                        count++;
+                        Collections.sort(list, new Comparator<nearestambulance>(){
+                            public int compare(nearestambulance obj1, nearestambulance obj2)
+                            {
+                                // TODO Auto-generated method stub
+                                return (obj1.distance < obj2.distance) ? -1: (obj1.distance > obj2.distance) ? 1:0 ;
+                            }
+                        });
+                        nearestambulance listItem = list.get(0);
+//                        Placename.setText(listItem.getPlaceName());
+//                        holder.Address.setText(listItem.getAddress());
+//                        holder.phonenum.setText("9509088668");
+                        int b=listItem.getDistance();
+                        Toast.makeText(mContext,b,Toast.LENGTH_LONG).show();
 
-                if(count==0){
-                LatLng latLng=new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
-                new GetContacts().execute();
-                mMap.clear();
-                //Place current location marker
-                MarkerOptions markerOptions = new MarkerOptions();
-                markerOptions.position(latLng);
-                markerOptions.title("Current Position");
-                markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                mCurrLocationMarker = mMap.addMarker(markerOptions);
-                for(int i=0;i<contacts.length();i++) {
-                    LatLng dest = new LatLng(laat.get(i), loot.get(i));
-                    MarkerOptions markerOption = new MarkerOptions();
-                    markerOption.position(dest);
-                    markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                    mMap.addMarker(markerOption);
-                }
-                    count++;
+                    } else {
+                        mMap.clear();
+                        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                        new GetContacts().execute();
+                        MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        markerOptions.title("Current Position");
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+                        mCurrLocationMarker = mMap.addMarker(markerOptions);
+                        for (int i = 0; i < contacts.length(); i++) {
+                            LatLng dest = new LatLng(laat.get(i), loot.get(i));
+                            MarkerOptions markerOption = new MarkerOptions();
+                            markerOption.position(dest);
+                            markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                            mMap.addMarker(markerOption);
+                        }
 
-                }else{
-                    mMap.clear();
-                    LatLng latLng=new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
-                    new GetContacts().execute();
-                    //Place current location marker
-                    MarkerOptions markerOptions = new MarkerOptions();
-                    markerOptions.position(latLng);
-                    markerOptions.title("Current Position");
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                    mCurrLocationMarker = mMap.addMarker(markerOptions);
-                    for(int i=0;i<contacts.length();i++) {
-                        LatLng dest = new LatLng(laat.get(i), loot.get(i));
-                        MarkerOptions markerOption = new MarkerOptions();
-                        markerOption.position(dest);
-                        markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                        mMap.addMarker(markerOption);
                     }
-
                 }
-//                hideProgressBar();
             }
         });
 
@@ -213,7 +245,6 @@ public class MapsActivity extends AppCompatActivity
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-//        mGoogleApiClient.connect();
     }
 
     private boolean checkPlayServices() {
@@ -242,7 +273,6 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.maps, menu);
         return true;
     }
@@ -253,13 +283,15 @@ public class MapsActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            Intent i =new Intent(MapsActivity.this,RecyclerViewActivity.class);
-            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(i);
-            return true;
+            if(a==0){
+                Toast.makeText(MapsActivity.this, "Please Select Any Nearby Places", Toast.LENGTH_LONG).show();
+            }else {
+                Intent i = new Intent(MapsActivity.this, RecyclerViewActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+                return true;
+            }
         }
 
         return super.onOptionsItemSelected(item);
@@ -537,10 +569,8 @@ public class MapsActivity extends AppCompatActivity
             e.printStackTrace();
         }
         new GetContacts().execute();
-//        String locality = list.get (0).getAddressLine (0);
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-//        markerOptions.title(locality);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 
@@ -653,8 +683,6 @@ public class MapsActivity extends AppCompatActivity
         @Override
         protected Void doInBackground(Void... arg0) {
             HttpHandler sh = new HttpHandler();
-
-            // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(url);
 
             Log.e(TAG, "Response from url: " + jsonStr);
@@ -662,11 +690,7 @@ public class MapsActivity extends AppCompatActivity
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
-
-                    // Getting JSON Array node
                     contacts = jsonObj.getJSONArray("result");
-
-                    // looping through All Contacts
                     for (int i = 0; i < contacts.length(); i++) {
                         JSONObject c = contacts.getJSONObject(i);
                         String lat=c.getString("lat");
@@ -716,22 +740,176 @@ public class MapsActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-//             Dismiss the progress dialog
-//             pDialog.dismiss();
-            /**
-             * Updating parsed JSON data into ListView
-             * */
-
 
         }
 
     }
     private void goToLocationZoom(double lat, double lng) {
         LatLng latLng = new LatLng(lat, lng);
+        MarkerOptions markerOptions = new MarkerOptions();
+        markerOptions.position(latLng);
+        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
+        mCurrLocationMarker = mMap.addMarker(markerOptions);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
     }
 
+    private String getDirectionsUrl(LatLng origin,LatLng dest){
+
+        // Origin of route
+        String str_origin = "origin="+origin.latitude+","+origin.longitude;
+
+        // Destination of route
+        String str_dest = "destination="+dest.latitude+","+dest.longitude;
+
+        // Sensor enabled
+        String sensor = "sensor=true";
+
+        // Building the parameters to the web service
+        String parameters = str_origin+"&"+str_dest+"&"+sensor;
+
+        // Output format
+        String output = "json";
+
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+
+        return url;
+    }
+    /** A method to download json data from url */
+    private String downloadUrl(String strUrl) throws IOException {
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL(strUrl);
+
+            // Creating an http connection to communicate with url
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            // Connecting to url
+            urlConnection.connect();
+
+            // Reading data from url
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb  = new StringBuffer();
+
+            String line = "";
+            while( ( line = br.readLine())  != null){
+                sb.append(line);
+            }
+
+            data = sb.toString();
+
+            br.close();
+
+        }catch(Exception e){
+            Log.d("while downloading url", e.toString());
+        }finally{
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    // Fetches data from url passed
+    private class DownloadTask extends AsyncTask<String, Void, String>{
+
+        // Downloading data in non-ui thread
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try{
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+            }catch(Exception e){
+                Log.d("Background Task",e.toString());
+            }
+            return data;
+        }
+
+        // Executes in UI thread, after the execution of
+        // doInBackground()
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+        }
+    }
+
+    /** A class to parse the Google Places in JSON format */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try{
+                jObject = new JSONObject(jsonData[0]);
+                DirectionsJSONParser parser = new DirectionsJSONParser();
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            ArrayList<LatLng> points = null;
+            PolylineOptions lineOptions = null;
+            MarkerOptions markerOptions = new MarkerOptions();
+            if(result.size()<1){
+//                Toast.makeText(GetNearbyPlacesData.this, "No Points", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Traversing through all the routes
+            for(int i=0;i<result.size();i++){
+                points = new ArrayList<LatLng>();
+                lineOptions = new PolylineOptions();
+                // Fetching i-th route
+                List<HashMap<String, String>> path = result.get(i);
+
+                // Fetching all the points in i-th route
+                for(int j=0;j<path.size();j++){
+                    HashMap<String,String> point = path.get(j);
+
+                    if(j==0){    // Get distance from the list
+                        distance = point.get("distance");
+                        continue;
+                    }else if(j==1){ // Get duration from the list
+                        duration = point.get("duration");
+                        continue;
+                    }
+
+                    double lat = Double.parseDouble(point.get("lat"));
+                    double lng = Double.parseDouble(point.get("lng"));
+                    LatLng position = new LatLng(lat, lng);
+                    points.add(position);
+
+
+                }
+
+            }
+
+        }
+    }
 
 
 }

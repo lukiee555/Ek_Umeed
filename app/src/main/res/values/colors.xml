@@ -3,6 +3,8 @@
     <color name="colorPrimary">#ed3c4a</color>
     <color name="colorPrimaryDark">#ed3c4a</color>
     <color name="colorAccent">#ed3c4a</color>
+    <color name="colorpressed">#f40114</color>
+    <color name="tv">#fafafa</color>
     <array name="progress_colors">
 
         <item>#3498db</item>

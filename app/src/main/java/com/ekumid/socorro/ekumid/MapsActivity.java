@@ -92,6 +92,7 @@ public class MapsActivity extends AppCompatActivity
     ArrayList<HashMap<String, String>> contactList;
     ArrayList<Double> laat = new ArrayList<Double>();
     ArrayList<Double> loot = new ArrayList<Double>();
+    ArrayList<String> distt = new ArrayList<>();
 
     Double lt, lo;
     LocationRequest mLocationRequest;
@@ -176,7 +177,7 @@ public class MapsActivity extends AppCompatActivity
                 if(mLastLocation==null){
                     Toast.makeText(mContext,"Please check internet or wait",Toast.LENGTH_SHORT).show();
                 }else {
-                    if (count == 0) {
+
                         LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                         new GetContacts().execute();
                         mMap.clear();
@@ -191,15 +192,14 @@ public class MapsActivity extends AppCompatActivity
                             markerOption.position(dest);
                             markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                             mMap.addMarker(markerOption);
-                            LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
-                            String url1 = getDirectionsUrl(origin, latLng);
-                            DownloadTask downloadTask = new DownloadTask();
-                            downloadTask.execute(url1);
-                            int a=Integer.parseInt(distance);
+//                            LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
+//                            String url1 = getDirectionsUrl(origin, latLng);
+//                            DownloadTask downloadTask = new DownloadTask();
+//                            downloadTask.execute(url1);
+                            int a=Integer.parseInt(distt.get(i));
                             nearestambulance ambulance=new nearestambulance(dest,a);
                             list.add(ambulance);
-                        }
-                        count++;
+
                         Collections.sort(list, new Comparator<nearestambulance>(){
                             public int compare(nearestambulance obj1, nearestambulance obj2)
                             {
@@ -208,28 +208,8 @@ public class MapsActivity extends AppCompatActivity
                             }
                         });
                         nearestambulance listItem = list.get(0);
-//                        Placename.setText(listItem.getPlaceName());
-//                        holder.Address.setText(listItem.getAddress());
-//                        holder.phonenum.setText("9509088668");
-                        int b=listItem.getDistance();
-                        Toast.makeText(mContext,b,Toast.LENGTH_LONG).show();
-
-                    } else {
-                        mMap.clear();
-                        LatLng latLng = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                        new GetContacts().execute();
-                        MarkerOptions markerOptions = new MarkerOptions();
-                        markerOptions.position(latLng);
-                        markerOptions.title("Current Position");
-                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-                        mCurrLocationMarker = mMap.addMarker(markerOptions);
-                        for (int i = 0; i < contacts.length(); i++) {
-                            LatLng dest = new LatLng(laat.get(i), loot.get(i));
-                            MarkerOptions markerOption = new MarkerOptions();
-                            markerOption.position(dest);
-                            markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                            mMap.addMarker(markerOption);
-                        }
+//                        int b=listItem.getDistance();
+//                        Toast.makeText(mContext,"kvnsd"+b+"jsdnvjsd",Toast.LENGTH_LONG).show();
 
                     }
                 }
@@ -561,13 +541,6 @@ public class MapsActivity extends AppCompatActivity
         latitude = location.getLatitude();
         longitude = location.getLongitude();
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        Geocoder geocoder=new Geocoder(mContext);
-        List<Address> list = null;
-        try {
-            list = geocoder.getFromLocation(latitude, longitude,1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         new GetContacts().execute();
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
@@ -695,11 +668,13 @@ public class MapsActivity extends AppCompatActivity
                         JSONObject c = contacts.getJSONObject(i);
                         String lat=c.getString("lat");
                         String lon=c.getString("lon");
+                        String dist=c.getString("dist");
                         lt=Double.parseDouble(lat);
                         lo=Double.parseDouble(lon);
                         HashMap<String, String> contact = new HashMap<>();
                         laat.add(lt);
                         loot.add(lo);
+                        distt.add(dist);
                         contact.put("lat", lat);
                         contact.put("lon", lon);
                         contactList.add(contact);
@@ -763,7 +738,7 @@ public class MapsActivity extends AppCompatActivity
         String str_dest = "destination="+dest.latitude+","+dest.longitude;
 
         // Sensor enabled
-        String sensor = "sensor=true";
+        String sensor = "sensor=false";
 
         // Building the parameters to the web service
         String parameters = str_origin+"&"+str_dest+"&"+sensor;
@@ -773,6 +748,7 @@ public class MapsActivity extends AppCompatActivity
 
         // Building the url to the web service
         String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+
 
         return url;
     }
@@ -875,7 +851,7 @@ public class MapsActivity extends AppCompatActivity
             PolylineOptions lineOptions = null;
             MarkerOptions markerOptions = new MarkerOptions();
             if(result.size()<1){
-//                Toast.makeText(GetNearbyPlacesData.this, "No Points", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
                 return;
             }
 

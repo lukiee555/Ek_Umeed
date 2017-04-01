@@ -12,6 +12,7 @@
 
 <LinearLayout
     android:weightSum="1"
+    android:paddingBottom="2dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal">
@@ -26,27 +27,44 @@
             android:layout_height="wrap_content"
             android:id="@+id/tv_Name"
             android:text="@string/name"
+            android:textColor="@color/colorPrimary"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/ratting"
-            android:id="@+id/tv_ratting"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:text="@string/distance_and_durarion"
+            android:textSize="20sp"
             android:id="@+id/tv_distance"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/address"
+            android:textSize="20sp"
             android:id="@+id/tv_address"/>
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="2dp"
+            android:background="#efefef"/>
+
+        <TextView
+            android:layout_marginLeft="15dp"
+            android:id="@+id/Driver_num"
+            android:drawablePadding="25dp"
+            android:singleLine="true"
+            android:drawableLeft="@drawable/ic_local_phone_black_24dp"
+            android:textSize="20sp"
+            android:clickable="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/number"/>
 
 
     </LinearLayout>
     <ImageView
         android:id="@+id/call"
+        android:visibility="gone"
         android:layout_weight=".20"
         android:layout_width="150dp"
         android:layout_height="170dp"

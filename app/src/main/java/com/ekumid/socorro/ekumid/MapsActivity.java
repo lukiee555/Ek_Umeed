@@ -152,7 +152,7 @@ public class MapsActivity extends AppCompatActivity
                 GooglePlayServicesUtil.getErrorDialog(resultCode, this,
                         PLAY_SERVICES_RESOLUTION_REQUEST).show();
             } else {
-                //finish();
+
             }
             return false;
         }
@@ -219,12 +219,49 @@ public class MapsActivity extends AppCompatActivity
             Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_ambulance) {
+            a=2;
+            String Hospital = "hospital";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_toll) {
+            a=3;
+            String Hospital = "hospital";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_rail) {
+            a=4;
+            String Hospital = "train_station";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_bus) {
+            a=5;
             String Bus = "bus_station";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
@@ -237,6 +274,7 @@ public class MapsActivity extends AppCompatActivity
             getNearbyPlacesData.execute(DataTransfer);
 
         } else if (id == R.id.nav_petrol) {
+            a=6;
             String Petrol = "gas_station";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
@@ -249,14 +287,63 @@ public class MapsActivity extends AppCompatActivity
             getNearbyPlacesData.execute(DataTransfer);
 
         } else if (id == R.id.nav_police) {
+            a=7;
+            String Hospital = "police";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_mobile) {
+            a=8;
+            String Hospital = "car_repair";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_toilet) {
+            a=9;
+            String Hospital = "hospital";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_department) {
+            a=10;
+            String Hospital = "hospital";
+            Log.d("onClick", "Button is Clicked");
+            mMap.clear();
+            String url = getUrl(latitude, longitude, Hospital);
+            Object[] DataTransfer = new Object[2];
+            DataTransfer[0] = mMap;
+            DataTransfer[1] = url;
+            Log.d("onClick", url);
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+            getNearbyPlacesData.execute(DataTransfer);
+            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_retro) {
+            a=11;
             String Restaurant = "restaurant";
             Log.d("onClick", "Button is Clicked");
             mMap.clear();
@@ -370,10 +457,10 @@ public class MapsActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-        String locality = list.get (0).getAddressLine (0);
+//        String locality = list.get (0).getAddressLine (0);
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(latLng);
-        markerOptions.title(locality);
+//        markerOptions.title(locality);
         markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
         mCurrLocationMarker = mMap.addMarker(markerOptions);
 

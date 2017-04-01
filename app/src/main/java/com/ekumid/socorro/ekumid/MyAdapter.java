@@ -36,7 +36,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         ListItem listItem=listItems.get(position);
         holder.Placename.setText(listItem.getPlaceName());
         holder.Address.setText(listItem.getAddress());
-        holder.Ratting.setText(listItem.getPlaceName());
         holder.Distance.setText(listItem.getDistance());
     }
 
@@ -47,13 +46,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     public class ViewHolder extends RecyclerView.ViewHolder{
 
-        public TextView Placename,Ratting,Distance,Address;
+        public TextView Placename,Distance,Address;
        public ImageView imageView;
 
         public ViewHolder(View itemView) {
             super(itemView);
             Placename=(TextView)itemView.findViewById(R.id.tv_Name);
-            Ratting=(TextView)itemView.findViewById(R.id.tv_ratting);
             Distance=(TextView)itemView.findViewById(R.id.tv_distance);
             Address=(TextView)itemView.findViewById(R.id.tv_address);
             imageView=(ImageView)itemView.findViewById(R.id.call);

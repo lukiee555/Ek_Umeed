@@ -9,6 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -37,6 +42,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
     String url;
     String distance = "";
     String duration = "";
+    GoogleApiClient mGoogleApiClient;
     private String TAG = RecyclerViewActivity.class.getSimpleName();
 
     @Override
@@ -58,7 +64,25 @@ public class RecyclerViewActivity extends AppCompatActivity {
             Log.d("onClick", "Button is Clicked");
             url = getUrl(MapsActivity.latitude, MapsActivity.longitude, Hospital);
             new GetContacts().execute();
+        }else if(MapsActivity.a==2){
 
+        }else if(MapsActivity.a==3){
+
+        }else if(MapsActivity.a==4){
+
+        }else if(MapsActivity.a==5){
+
+        }else if(MapsActivity.a==6){
+
+        }else if(MapsActivity.a==7){
+
+        }else if(MapsActivity.a==8){
+
+        }else if(MapsActivity.a==9){
+
+        }else if(MapsActivity.a==10){
+
+        }else if(MapsActivity.a==11){
 
         }
 
@@ -107,20 +131,22 @@ public class RecyclerViewActivity extends AppCompatActivity {
                         JSONObject c = jsonArray.getJSONObject(i);
                         String name = c.getString("name");
                         String address = c.getString("vicinity");
-                        String ratting=c.getString("rating");
                         String imageurl=c.getString("icon");
-
-                        JSONObject location = c.getJSONObject("geometry");
-                        JSONObject latlng=location.getJSONObject("location");
-                        String lt=latlng.getString("lat");
-                        String lot=latlng.getString("lng");
+                        String lt=c.getJSONObject("geometry").getJSONObject("location").getString("lat");
+                        String lot=c.getJSONObject("geometry").getJSONObject("location").getString("lng");
                         Double lat=Double.parseDouble(lt);
                         Double lng=Double.parseDouble(lot);
                         LatLng dest=new LatLng(lat,lng);
                         LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
-                        getdetination(origin,dest);
+                        // Getting URL to the Google Directions API
+                        String url1 = getDirectionsUrl(origin, dest);
+
+                        DownloadTask downloadTask = new DownloadTask();
+
+                        // Start downloading json data from Google Directions API
+                        downloadTask.execute(url1);
                         String dis=("Distace"+distance+"/Duration"+duration);
-                        ListItem Item= new ListItem(name,ratting,address,imageurl,dis);
+                        ListItem Item= new ListItem(name,address,imageurl,dis);
                         listItems.add(Item);
 
 
@@ -161,6 +187,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
             super.onPostExecute(result);
             // Dismiss the progress dialog
             adapter= new MyAdapter(listItems,getApplicationContext());
+            recyclerView.addItemDecoration(new DividerItemDecoration(RecyclerViewActivity.this, LinearLayoutManager.VERTICAL));
             recyclerView.setAdapter(adapter);
 
 
@@ -306,7 +333,6 @@ public class RecyclerViewActivity extends AppCompatActivity {
             for(int i=0;i<result.size();i++){
                 points = new ArrayList<LatLng>();
                 lineOptions = new PolylineOptions();
-
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
 
@@ -315,10 +341,10 @@ public class RecyclerViewActivity extends AppCompatActivity {
                     HashMap<String,String> point = path.get(j);
 
                     if(j==0){    // Get distance from the list
-                        distance = (String)point.get("distance");
+                        distance = point.get("distance");
                         continue;
                     }else if(j==1){ // Get duration from the list
-                        duration = (String)point.get("duration");
+                        duration = point.get("duration");
                         continue;
                     }
 
@@ -329,13 +355,6 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
 
                 }
-                //locating
-
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(7);
-
-                lineOptions.color(Color.RED);
 
             }
 

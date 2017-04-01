@@ -5,14 +5,13 @@ package com.ekumid.socorro.ekumid;
  */
 
 public class ListItem {
-    String PlaceName,Ratting,Distance,Address,ImageUrl;
+    String PlaceName,Distance,Address,ImageUrl;
 
     public ListItem() {
     }
 
-    public ListItem(String placeName, String ratting, String address, String imageUrl,String distance) {
+    public ListItem(String placeName,  String address, String imageUrl,String distance) {
         PlaceName = placeName;
-        Ratting = ratting;
         Address = address;
         ImageUrl = imageUrl;
         Distance=distance;
@@ -26,13 +25,6 @@ public class ListItem {
         PlaceName = placeName;
     }
 
-    public String getRatting() {
-        return Ratting;
-    }
-
-    public void setRatting(String ratting) {
-        Ratting = ratting;
-    }
 
     public String getDistance() {
         return Distance;

@@ -18,8 +18,6 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
     String googlePlacesData;
     GoogleMap mMap;
     String url;
-    String distance = "";
-    String duration = "";
 
     @Override
     protected String doInBackground(Object... params) {
@@ -56,13 +54,35 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
             String placeName = googlePlace.get("place_name");
             String vicinity = googlePlace.get("vicinity");
             LatLng latLng = new LatLng(lat, lng);
+            if(MapsActivity.a==1){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_hospital));
+            }else if(MapsActivity.a==2){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_ambulance));
+            }else if(MapsActivity.a==3){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_toll));
+            }else if(MapsActivity.a==4){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_rail));
+            }else if(MapsActivity.a==5){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_bus));
+            }else if(MapsActivity.a==6){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_petrol));
+            }else if(MapsActivity.a==7){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_police));
+            }else if(MapsActivity.a==8){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_mobile));
+            }else if(MapsActivity.a==9){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_toilet));
+            }else if(MapsActivity.a==10){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_dept));
+            }else if(MapsActivity.a==11){
+                markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.icon_resto));
+            }
             markerOptions.position(latLng);
             markerOptions.title(placeName + " : " + vicinity);
-            markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             mMap.addMarker(markerOptions);
             //move map camera
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
+            mMap.animateCamera(CameraUpdateFactory.zoomTo(13));
         }
     }
 

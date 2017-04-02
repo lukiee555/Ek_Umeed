@@ -10,9 +10,13 @@ public class nearestambulance {
 
     LatLng latLng;
     int distance;
+    String name,mobile ,rc;
 
-    public nearestambulance(LatLng latLng, int distance) {
+    public nearestambulance(LatLng latLng, String rc, String mobile, String name, int distance) {
         this.latLng = latLng;
+        this.rc = rc;
+        this.mobile = mobile;
+        this.name = name;
         this.distance = distance;
     }
 
@@ -30,5 +34,29 @@ public class nearestambulance {
 
     public void setDistance(int distance) {
         this.distance = distance;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getMobile() {
+        return mobile;
+    }
+
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
+    }
+
+    public String getRc() {
+        return rc;
+    }
+
+    public void setRc(String rc) {
+        this.rc = rc;
     }
 }

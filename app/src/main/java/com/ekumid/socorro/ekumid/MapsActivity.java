@@ -80,7 +80,6 @@ public class MapsActivity extends AppCompatActivity
     private GoogleMap mMap;
     static double latitude;
     static double longitude;
-    int count =0;
     JSONArray contacts;
     String distance = "";
     String duration = "";
@@ -93,6 +92,10 @@ public class MapsActivity extends AppCompatActivity
     ArrayList<Double> laat = new ArrayList<Double>();
     ArrayList<Double> loot = new ArrayList<Double>();
     ArrayList<String> distt = new ArrayList<>();
+    ArrayList<String> namee = new ArrayList<>();
+    ArrayList<String> mobilee = new ArrayList<>();
+    ArrayList<String> rce = new ArrayList<>();
+     static String drivername,drivermobile,drivervcnumber;
 
     Double lt, lo;
     LocationRequest mLocationRequest;
@@ -192,12 +195,8 @@ public class MapsActivity extends AppCompatActivity
                             markerOption.position(dest);
                             markerOption.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                             mMap.addMarker(markerOption);
-//                            LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
-//                            String url1 = getDirectionsUrl(origin, latLng);
-//                            DownloadTask downloadTask = new DownloadTask();
-//                            downloadTask.execute(url1);
                             int a=Integer.parseInt(distt.get(i));
-                            nearestambulance ambulance=new nearestambulance(dest,a);
+                            nearestambulance ambulance=new nearestambulance(dest,rce.get(i),mobilee.get(i),namee.get(i),a);
                             list.add(ambulance);
                         }
 
@@ -210,7 +209,11 @@ public class MapsActivity extends AppCompatActivity
                     });
                     nearestambulance listItem = list.get(0);
                     int b=listItem.getDistance();
-//                    Toast.makeText(mContext,"kvnsd"+b+"jsdnvjsd",Toast.LENGTH_SHORT).show();
+                    drivername=listItem.getName();
+                    drivermobile=listItem.getMobile();
+                    drivervcnumber=listItem.getRc();
+                    Intent i=new Intent(mContext,DriverActivity.class);
+                    startActivity(i);
                 }
             }
         });
@@ -668,12 +671,18 @@ public class MapsActivity extends AppCompatActivity
                         String lat=c.getString("lat");
                         String lon=c.getString("lon");
                         String dist=c.getString("dist");
+                        String name=c.getString("name");
+                        String mobile=c.getString("mobile");
+                        String rc=c.getString("rc");
                         lt=Double.parseDouble(lat);
                         lo=Double.parseDouble(lon);
                         HashMap<String, String> contact = new HashMap<>();
                         laat.add(lt);
                         loot.add(lo);
                         distt.add(dist);
+                        namee.add(name);
+                        mobilee.add(mobile);
+                        rce.add(rc);
                         contact.put("lat", lat);
                         contact.put("lon", lon);
                         contactList.add(contact);
@@ -720,171 +729,11 @@ public class MapsActivity extends AppCompatActivity
     }
     private void goToLocationZoom(double lat, double lng) {
         LatLng latLng = new LatLng(lat, lng);
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(latLng);
-        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
-        mCurrLocationMarker = mMap.addMarker(markerOptions);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
         mMap.animateCamera(CameraUpdateFactory.zoomTo(15));
     }
 
-    private String getDirectionsUrl(LatLng origin,LatLng dest){
 
-        // Origin of route
-        String str_origin = "origin="+origin.latitude+","+origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination="+dest.latitude+","+dest.longitude;
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Building the parameters to the web service
-        String parameters = str_origin+"&"+str_dest+"&"+sensor;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
-
-
-        return url;
-    }
-    /** A method to download json data from url */
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try{
-            URL url = new URL(strUrl);
-
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb  = new StringBuffer();
-
-            String line = "";
-            while( ( line = br.readLine())  != null){
-                sb.append(line);
-            }
-
-            data = sb.toString();
-
-            br.close();
-
-        }catch(Exception e){
-            Log.d("while downloading url", e.toString());
-        }finally{
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
-
-    // Fetches data from url passed
-    private class DownloadTask extends AsyncTask<String, Void, String>{
-
-        // Downloading data in non-ui thread
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try{
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-            }catch(Exception e){
-                Log.d("Background Task",e.toString());
-            }
-            return data;
-        }
-
-        // Executes in UI thread, after the execution of
-        // doInBackground()
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-        }
-    }
-
-    /** A class to parse the Google Places in JSON format */
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try{
-                jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
-            PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
-            if(result.size()<1){
-                Toast.makeText(getBaseContext(), "No Points", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Traversing through all the routes
-            for(int i=0;i<result.size();i++){
-                points = new ArrayList<LatLng>();
-                lineOptions = new PolylineOptions();
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
-
-                // Fetching all the points in i-th route
-                for(int j=0;j<path.size();j++){
-                    HashMap<String,String> point = path.get(j);
-
-                    if(j==0){    // Get distance from the list
-                        distance = point.get("distance");
-                        continue;
-                    }else if(j==1){ // Get duration from the list
-                        duration = point.get("duration");
-                        continue;
-                    }
-
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-
-
-                }
-
-            }
-
-        }
-    }
 
 
 }

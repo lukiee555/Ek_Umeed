@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -74,7 +75,7 @@ public class MapsActivity extends AppCompatActivity
         GoogleApiClient.OnConnectionFailedListener,
         com.google.android.gms.location.LocationListener {
 
-    Button emergency;
+    Button emergency,offline;
     private String TAG = MapsActivity.class.getSimpleName();
     Context mContext;
     private GoogleMap mMap;
@@ -95,6 +96,7 @@ public class MapsActivity extends AppCompatActivity
     ArrayList<String> namee = new ArrayList<>();
     ArrayList<String> mobilee = new ArrayList<>();
     ArrayList<String> rce = new ArrayList<>();
+    static String currentaddress;
      static String drivername,drivermobile,drivervcnumber;
 
     Double lt, lo;
@@ -109,6 +111,7 @@ public class MapsActivity extends AppCompatActivity
         setContentView(R.layout.activity_maps);
         mContext = this;
         emergency = (Button) findViewById(R.id.bt_em);
+        offline = (Button) findViewById(R.id.bt_em1);
         contactList = new ArrayList<>();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -218,7 +221,33 @@ public class MapsActivity extends AppCompatActivity
             }
         });
 
+        offline.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendSMS();
+            }
+        });
 
+
+    }
+
+    protected void sendSMS() {
+        Log.i("Send SMS", "");
+        Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+
+        smsIntent.setData(Uri.parse("smsto:"));
+        smsIntent.setType("vnd.android-dir/mms-sms");
+        smsIntent.putExtra("address"  , new String ("9460822240"));
+        smsIntent.putExtra("sms_body"  , "Need help "+latitude+","+longitude);
+
+        try {
+            startActivity(smsIntent);
+            finish();
+            Log.i("Finished sending SMS...", "");
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(MapsActivity.this,
+                    "SMS faild, please try again later.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -317,19 +346,8 @@ public class MapsActivity extends AppCompatActivity
 //            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
 
         } else if (id == R.id.nav_toll) {
-            GetNearbyPlacesData.listItems.clear();
-            a=3;
-            String Hospital = "hospital";
-            Log.d("onClick", "Button is Clicked");
-            mMap.clear();
-            String url = getUrl(latitude, longitude, Hospital);
-            Object[] DataTransfer = new Object[2];
-            DataTransfer[0] = mMap;
-            DataTransfer[1] = url;
-            Log.d("onClick", url);
-            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-            getNearbyPlacesData.execute(DataTransfer);
-//            Toast.makeText(MapsActivity.this, "Nearby Hospitals", Toast.LENGTH_LONG).show();
+           Intent i=new Intent(MapsActivity.this,Webview.class);
+            startActivity(i);
 
         } else if (id == R.id.nav_rail) {
             GetNearbyPlacesData.listItems.clear();
@@ -497,7 +515,8 @@ public class MapsActivity extends AppCompatActivity
         mLocationRequest.setInterval(1000);
         mLocationRequest.setFastestInterval(1000);
         mLocationRequest.setSmallestDisplacement(5);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mGoogleApiClient.connect();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -542,6 +561,16 @@ public class MapsActivity extends AppCompatActivity
         //Place current location marker
         latitude = location.getLatitude();
         longitude = location.getLongitude();
+        Geocoder geocoder=new Geocoder (MapsActivity.this);
+
+        List<android.location.Address> list = null;
+        try {
+            list = geocoder.getFromLocation(latitude, longitude,1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        currentaddress = list.get (0).getAddressLine (0);
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         new GetContacts().execute();
         MarkerOptions markerOptions = new MarkerOptions();

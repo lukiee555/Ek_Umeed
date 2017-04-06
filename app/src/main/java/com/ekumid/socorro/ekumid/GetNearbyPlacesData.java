@@ -1,24 +1,19 @@
 package com.ekumid.socorro.ekumid;
 
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +24,11 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
     String googlePlacesData;
     GoogleMap mMap;
     String url;
-    String distance = "";
-    String duration = "";
+    String distance1 = "";
+    String duration1 = "";
+    private List<Marker> originMarkers = new ArrayList<>();
+    private List<Marker> destinationMarkers = new ArrayList<>();
+    private List<Polyline> polylinePaths = new ArrayList<>();
    static List<ListItem> listItems=new ArrayList<>();
 
 
@@ -71,7 +69,7 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
             String imageurl=googlePlace.get("icon");
             LatLng latLng = new LatLng(lat, lng);
 //            LatLng origin=new LatLng(MapsActivity.latitude,MapsActivity.longitude);
-            String dis=(distance);
+            String dis=("distance  "+distance1+"duration  "+duration1);
             ListItem Item= new ListItem(placeName,vicinity,imageurl,dis);
             listItems.add(Item);
             if(MapsActivity.a==1){
@@ -105,7 +103,6 @@ public class GetNearbyPlacesData extends AsyncTask<Object, String, String> {
             mMap.animateCamera(CameraUpdateFactory.zoomTo(13));
         }
     }
-
 
 
 

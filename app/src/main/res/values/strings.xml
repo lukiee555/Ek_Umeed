@@ -14,4 +14,5 @@
     <string name="number">Number</string>
     <string name="emergancy">Emergancy</string>
     <string name="emergency">emergency</string>
+    <string name="offline">Offline</string>
 </resources>

@@ -40,6 +40,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         ListItem listItem = listItems.get(position);
         holder.Placename.setText(listItem.getPlaceName());
         holder.Address.setText(listItem.getAddress());
+        holder.Distance.setText(listItem.getDistance());
         holder.phonenum.setText("9509088668");
         holder.phonenum.setOnClickListener(new View.OnClickListener() {
             @Override
